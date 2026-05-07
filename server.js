@@ -33,13 +33,15 @@ app.post('/api/convert', async (req, res) => {
       return res.status(400).json({ error: 'Code is required' });
     }
 
-		const apiKey = process.env.Api2;
-    const apiKey = process.env.CLAUDE_API_KEY;
-console.log('Environment variables:', Object.keys(process.env));
-console.log('CLAUDE_API_KEY:', apiKey);
-console.log('Api2:', process.env.Api2);
-
-    console.log('API Key:', apiKey ? 'PRESENT' : 'MISSING');
+    // DEBUG
+    console.log('=== ENVIRONMENT DEBUG ===');
+    console.log('All env vars:', Object.keys(process.env).filter(k => k.includes('API') || k.includes('Api')));
+    console.log('CLAUDE_API_KEY:', process.env.CLAUDE_API_KEY ? 'SET' : 'NOT SET');
+    console.log('Api2:', process.env.Api2 ? 'SET' : 'NOT SET');
+    
+    const apiKey = process.env.CLAUDE_API_KEY || process.env.Api2;
+    console.log('Final apiKey used:', apiKey ? 'SET' : 'NOT SET');
+    console.log('=== END DEBUG ===');
 
     const requestBody = JSON.stringify({
       model: 'claude-3-5-sonnet-20241022',
@@ -66,7 +68,7 @@ console.log('Api2:', process.env.Api2);
       },
     };
 
-    console.log('Request headers:', JSON.stringify(options.headers, null, 2));
+    console.log('Making request to API...');
 
     const apiReq = https.request(options, (apiRes) => {
       let data = '';
@@ -77,9 +79,9 @@ console.log('Api2:', process.env.Api2);
 
       apiRes.on('end', () => {
         console.log('API Response status:', apiRes.statusCode);
-        console.log('API Response:', data);
 
         if (apiRes.statusCode !== 200) {
+          console.log('Error response:', data);
           return res.status(apiRes.statusCode).json({
             error: 'API Error',
             details: data,
@@ -103,7 +105,7 @@ console.log('Api2:', process.env.Api2);
     });
 
     apiReq.on('error', (error) => {
-      console.error('Request error:', error);
+      console.error('Request error:', error.message);
       return res.status(500).json({
         error: 'Request failed',
         details: error.message,
