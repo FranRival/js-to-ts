@@ -34,6 +34,11 @@ app.post('/api/convert', async (req, res) => {
     }
 
 		const apiKey = process.env.Api2;
+    const apiKey = process.env.CLAUDE_API_KEY;
+console.log('Environment variables:', Object.keys(process.env));
+console.log('CLAUDE_API_KEY:', apiKey);
+console.log('Api2:', process.env.Api2);
+
     console.log('API Key:', apiKey ? 'PRESENT' : 'MISSING');
 
     const requestBody = JSON.stringify({
