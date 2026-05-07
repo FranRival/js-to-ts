@@ -6,10 +6,6 @@ const port = process.env.PORT || 3000;
 
 app.use(express.json());
 
-const client = new Anthropic({
-  apiKey: process.env.CLAUDE_API_KEY,
-});
-
 // CORS
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -37,8 +33,16 @@ app.post('/api/convert', async (req, res) => {
       return res.status(400).json({ error: 'Code is required' });
     }
 
+    const apiKey = process.env.CLAUDE_API_KEY;
+    console.log('API Key present:', !!apiKey);
+    console.log('API Key length:', apiKey ? apiKey.length : 0);
+
+    const client = new Anthropic.default({
+      apiKey: apiKey,
+    });
+
     const message = await client.messages.create({
-      model: 'claude-3-haiku-20240307',
+      model: 'claude-3-5-sonnet-20241022',
       max_tokens: 4000,
       system: SYSTEM_PROMPT,
       messages: [
@@ -52,7 +56,7 @@ app.post('/api/convert', async (req, res) => {
     const result = message.content[0];
 
     if (result.type !== 'text') {
-      return res.status(500).json({ error: 'Unexpected response' });
+      return res.status(500).json({ error: 'Unexpected response type' });
     }
 
     return res.json({
@@ -60,7 +64,7 @@ app.post('/api/convert', async (req, res) => {
       code: result.text,
     });
   } catch (error) {
-    console.error('Error:', error.message);
+    console.error('Error details:', error);
     return res.status(500).json({
       error: 'Conversion failed',
       details: error.message,
