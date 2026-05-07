@@ -21,19 +21,18 @@ Rules:
 Important: The code should be production-ready and follow TypeScript best practices.`;
 
 module.exports = async function handler(req, res) {
-  // Handle preflight FIRST
+  // CORS headers MUST be set first and on every response
+  const origin = req.headers.origin || '*';
+  res.setHeader('Access-Control-Allow-Origin', origin);
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Max-Age', '86400');
+
+  // Handle OPTIONS preflight
   if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    res.status(200).end();
+    res.status(200).send('OK');
     return;
   }
-
-  // Enable CORS for all requests
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   // Only POST allowed
   if (req.method !== 'POST') {
@@ -81,14 +80,12 @@ module.exports = async function handler(req, res) {
   } catch (error) {
     console.error('Conversion error:', error);
 
-    // Handle rate limit
     if (error.status === 429) {
       return res.status(429).json({
         error: 'Rate limited. Please try again in a moment.',
       });
     }
 
-    // Handle auth error
     if (error.status === 401) {
       return res.status(401).json({
         error: 'API key invalid',
