@@ -71,13 +71,16 @@ app.post('/api/convert', async (req, res) => {
       success: true,
       code: result.text,
     });
+ 
   } catch (error) {
     console.error('Error:', error);
+    console.error('API Key:', process.env.CLAUDE_API_KEY ? 'SET' : 'NOT SET');
     return res.status(500).json({
       error: 'Conversion failed',
       details: error.message,
     });
   }
+
 });
 
 app.listen(port, () => {
