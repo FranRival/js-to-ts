@@ -50,7 +50,7 @@ app.post('/api/convert', async (req, res) => {
     }
 
     const message = await client.messages.create({
-      model: 'claude-opus-3',
+      model: 'claude-3-opus-20240229',
       max_tokens: 4000,
       system: SYSTEM_PROMPT,
       messages: [
