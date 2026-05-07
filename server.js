@@ -1,5 +1,5 @@
 const express = require('express');
-const Anthropic = require('@anthropic-ai/sdk');
+const https = require('https');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -34,14 +34,9 @@ app.post('/api/convert', async (req, res) => {
     }
 
     const apiKey = process.env.CLAUDE_API_KEY;
-    console.log('API Key present:', !!apiKey);
-    console.log('API Key length:', apiKey ? apiKey.length : 0);
+    console.log('API Key:', apiKey ? 'PRESENT' : 'MISSING');
 
-    const client = new Anthropic.default({
-      apiKey: apiKey,
-    });
-
-    const message = await client.messages.create({
+    const requestBody = JSON.stringify({
       model: 'claude-3-5-sonnet-20241022',
       max_tokens: 4000,
       system: SYSTEM_PROMPT,
@@ -53,18 +48,67 @@ app.post('/api/convert', async (req, res) => {
       ],
     });
 
-    const result = message.content[0];
+    const options = {
+      hostname: 'api.anthropic.com',
+      port: 443,
+      path: '/v1/messages',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(requestBody),
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+    };
 
-    if (result.type !== 'text') {
-      return res.status(500).json({ error: 'Unexpected response type' });
-    }
+    console.log('Request headers:', JSON.stringify(options.headers, null, 2));
 
-    return res.json({
-      success: true,
-      code: result.text,
+    const apiReq = https.request(options, (apiRes) => {
+      let data = '';
+
+      apiRes.on('data', (chunk) => {
+        data += chunk;
+      });
+
+      apiRes.on('end', () => {
+        console.log('API Response status:', apiRes.statusCode);
+        console.log('API Response:', data);
+
+        if (apiRes.statusCode !== 200) {
+          return res.status(apiRes.statusCode).json({
+            error: 'API Error',
+            details: data,
+          });
+        }
+
+        try {
+          const result = JSON.parse(data);
+          const content = result.content[0].text;
+          return res.json({
+            success: true,
+            code: content,
+          });
+        } catch (e) {
+          return res.status(500).json({
+            error: 'Parse error',
+            details: e.message,
+          });
+        }
+      });
     });
+
+    apiReq.on('error', (error) => {
+      console.error('Request error:', error);
+      return res.status(500).json({
+        error: 'Request failed',
+        details: error.message,
+      });
+    });
+
+    apiReq.write(requestBody);
+    apiReq.end();
   } catch (error) {
-    console.error('Error details:', error);
+    console.error('Error:', error);
     return res.status(500).json({
       error: 'Conversion failed',
       details: error.message,
