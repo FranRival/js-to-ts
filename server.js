@@ -44,7 +44,7 @@ app.post('/api/convert', async (req, res) => {
     console.log('=== END DEBUG ===');
 
     const requestBody = JSON.stringify({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-opus-4-1-20250805',
       max_tokens: 4000,
       system: SYSTEM_PROMPT,
       messages: [
