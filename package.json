@@ -4,6 +4,6 @@
   "description": "JS to TS Converter API",
   "main": "api/convert.js",
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.21.3"
+    "@anthropic-ai/sdk": "^0.24.0"
   }
 }
