@@ -6,9 +6,14 @@ const port = process.env.PORT || 3000;
 
 app.use(express.json());
 
+const apiKey = process.env.CLAUDE_API_KEY;
+console.log('API Key length:', apiKey ? apiKey.length : 'NOT SET');
+console.log('API Key starts with:', apiKey ? apiKey.substring(0, 10) : 'NONE');
+
 const client = new Anthropic({
-  apiKey: process.env.CLAUDE_API_KEY,
+  apiKey: apiKey,
 });
+
 
 const SYSTEM_PROMPT = `You are an expert TypeScript developer. Convert JavaScript code to TypeScript with proper type annotations.
 
