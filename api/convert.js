@@ -20,7 +20,7 @@ Rules:
 
 Important: The code should be production-ready and follow TypeScript best practices.`;
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
