@@ -33,7 +33,7 @@ app.post('/api/convert', async (req, res) => {
       return res.status(400).json({ error: 'Code is required' });
     }
 
-    const apiKey = process.env.CLAUDE_API_KEY;
+		const apiKey = process.env.Api2;
     console.log('API Key:', apiKey ? 'PRESENT' : 'MISSING');
 
     const requestBody = JSON.stringify({
